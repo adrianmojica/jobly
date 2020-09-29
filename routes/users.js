@@ -1,3 +1,4 @@
+
 const express = require('express');
 const ExpressError = require('../helpers/ExpressError');
 const { ensureCorrectUser, authRequired } = require('../middleware/auth');
@@ -5,7 +6,6 @@ const User = require('../models/User');
 const { validate } = require('jsonschema');
 const { userNewSchema, userUpdateSchema } = require('../schemas');
 const createToken = require('../helpers/createToken');
-
 const router = express.Router();
 
 // get all users
@@ -28,22 +28,21 @@ router.get('/:username', authRequired, async function(req,res, next){
 })
 
 //post userdata
-router.post('/', async function (req, res, next){
+router.post('/', async function(req, res, next) {
     try {
       const validation = validate(req.body, userNewSchema);
-    
-      if(!valudation.valid){
-          throw new ExpressError(validation.error.map(e => e.stack), 400);
+  
+      if (!validation.valid) {
+        throw new ExpressError(validation.errors.map(e => e.stack), 400);
       }
-
+  
       const newUser = await User.register(req.body);
       const token = createToken(newUser);
-      return res.status(201).json({token});
-    
-    } catch (error) {
-        return next(error);
+      return res.status(201).json({ token });
+    } catch (err) {
+      return next(err);
     }
-});
+  });
 
 
 //patch
